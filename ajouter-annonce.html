@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MetroHome24 · Outil : ajouter une annonce</title>
+<style>
+body{font:16px/1.5 system-ui,sans-serif;max-width:720px;margin:0 auto;padding:16px;background:#FAF6FC;color:#1F1430}
+h1{font-size:24px}label{display:block;font-weight:600;font-size:14px;margin-top:10px}
+input,select,textarea{width:100%;padding:9px;border:1px solid #D9C9E8;border-radius:8px;font:inherit;margin-top:3px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}button{margin-top:16px;padding:12px 18px;border:0;border-radius:10px;background:#5B2A86;color:#fff;font:600 16px system-ui;cursor:pointer}
+pre{background:#fff;border:1px solid #D9C9E8;border-radius:8px;padding:12px;white-space:pre-wrap;word-break:break-word;font-size:13px}
+.n{background:#fff;border-left:4px solid #FF5A7A;padding:10px 12px;border-radius:0 8px 8px 0}
+@media(prefers-color-scheme:dark){body{background:#150E22;color:#F3ECFA}input,select,textarea,pre,.n{background:#1F1630;color:#F3ECFA;border-color:#3A2B58}}
+</style></head><body>
+<h1>Ajouter une annonce</h1>
+<p class="n">Cet outil reste sur votre ordinateur (ne le mettez pas en ligne). Remplissez le formulaire, copiez le résultat, puis collez-le dans <b>site/assets/data.js</b>, juste après la ligne <code>listings:[</code>.</p>
+<form id="f" onsubmit="return false">
+<label>Numéro de l’annonce (unique, jamais deux fois le même)<input id="id" type="number" value="100" min="1"></label>
+<label>Titre<input id="t" placeholder="Maison 3 chambres clôturée"></label>
+<div class="two"><label>Type<select id="type"><option>Maison</option><option>Villa</option><option>Appartement</option><option>Studio</option><option>Parcelle</option><option>Terrain</option><option>Bureau</option><option>Boutique</option><option>Entrepôt</option></select></label>
+<label>Transaction<select id="tr"><option>Location</option><option>Vente</option></select></label></div>
+<div class="two"><label>Ville / territoire<select id="vi"></select></label><label>Commune<select id="c"></select></label></div>
+<label>Quartier<input id="q" placeholder="Golf"></label>
+<div class="two"><label>Prix ou loyer<input id="prix" type="number" min="0"></label><label>Devise<select id="dev"><option>USD</option><option>CDF</option></select></label></div>
+<div class="two"><label>Chambres<input id="ch" type="number" value="2" min="0"></label><label>Salles de bain<input id="bain" type="number" value="1" min="0"></label></div>
+<label>Surface (m²)<input id="m2" type="number" value="100" min="0"></label>
+<label>Caution / avance<input id="cond" placeholder="Caution 1 mois, avance 3 mois"></label>
+<label>Frais de visite (écrivez Aucun s’il n’y en a pas)<input id="fv" value="Aucun"></label>
+<div class="two"><label>Publié par<select id="pub"><option>Propriétaire</option><option>Commissionnaire</option><option>Agence</option></select></label>
+<label>Badge de vérification<select id="v"><option>Non vérifié</option><option>Identité vérifiée</option><option>Mandat vérifié</option><option>Bien inspecté</option></select></label></div>
+<label>Honoraires (si commissionnaire ou agence : montant ou %, qui paie, quand)<input id="hon" value="Aucun"></label>
+<label>Téléphone / WhatsApp du publieur (ex. 0991234567)<input id="phone" type="tel"></label>
+<label>Photos (noms des fichiers déposés dans site/photos/, séparés par des virgules)<input id="photos" placeholder="maison1.jpg, maison1-salon.jpg"></label>
+<label>Description<textarea id="desc" rows="4"></textarea></label>
+<button id="go">Générer le texte à copier</button> <button id="cp" type="button">Copier</button>
+</form>
+<p class="n"><b>Important :</b> le badge « Identité vérifiée », « Mandat vérifié » ou « Bien inspecté » ne doit être mis que si vous avez vraiment fait ce contrôle. Un badge ne garantit pas la propriété légale du bien.</p>
+<pre id="out">Le résultat apparaîtra ici.</pre>
+<script>
+const L={Lubumbashi:['Annexe','Kamalondo','Kampemba','Katuba','Kenya','Lubumbashi','Ruashi'],Likasi:['Kikula','Likasi','Panda','Shituru'],Kipushi:[],Kasenga:[],Kambove:[],Pweto:[],Sakania:[],Mitwaba:[]};
+const $=i=>document.getElementById(i),O=a=>a.map(x=>`<option>${x}</option>`).join('');
+$('vi').innerHTML=O(Object.keys(L));
+function com(){const l=L[$('vi').value];$('c').innerHTML='<option value="">'+(l.length?'Choisir':'Non applicable')+'</option>'+O(l)}
+$('vi').onchange=com;com();
+$('go').onclick=()=>{
+ let ph=$('phone').value.replace(/\D/g,'');if(ph.startsWith('0'))ph='243'+ph.slice(1);
+ const o={id:+$('id').value,t:$('t').value.trim(),type:$('type').value,tr:$('tr').value,vi:$('vi').value,c:$('c').value,q:$('q').value.trim(),
+  prix:+$('prix').value,dev:$('dev').value,per:$('tr').value==='Location'?'/mois':'',ch:+$('ch').value,bain:+$('bain').value,m2:+$('m2').value,
+  pub:$('pub').value,v:[$('v').value],cond:$('cond').value.trim()||'Non précisé',fv:$('fv').value.trim()||'Aucun',hon:$('hon').value.trim()||'Aucun',
+  desc:$('desc').value.trim(),st:'Active',d:Math.floor(Date.now()/1000)};
+ if(ph)o.phone=ph;
+ const p=$('photos').value.split(',').map(s=>s.trim()).filter(Boolean);if(p.length)o.photos=p.map(s=>'photos/'+s);
+ if(!o.t||!o.q||!o.prix){$('out').textContent='Titre, quartier et prix sont obligatoires.';return}
+ $('out').textContent=JSON.stringify(o,null,1)+',';
+ $('id').value=o.id+1};
+$('cp').onclick=()=>{navigator.clipboard.writeText($('out').textContent).then(()=>{$('cp').textContent='Copié ✔'})};
+</script></body></html>

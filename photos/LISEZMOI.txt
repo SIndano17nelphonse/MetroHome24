@@ -1,0 +1,2 @@
+Déposez ici vos photos de maisons (JPG, 1200 px de large maximum, moins de 300 Ko chacune). Puis référencez-les dans assets/data.js : photos:['photos/nom.jpg'].
+N'utilisez que des photos dont vous avez le droit : les vôtres ou celles du propriétaire, avec son accord.
